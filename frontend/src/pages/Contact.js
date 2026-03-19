@@ -7,7 +7,8 @@ const initialForm = {
   phone: '',
   classLevel: '',
   subject: '',
-  message: ''
+  address:'',
+  message: '',
 };
 
 const classOptions = ['Class 9', 'Class 10', 'Class 11', 'Class 12'];
@@ -43,6 +44,8 @@ const Contact = () => {
       errs.classLevel = 'Please select your class';
     if (!data.subject)
       errs.subject = 'Please select a subject';
+    if (!data.address || data.address.trim().length < 10)
+      errs.address = 'Address must be at least 10 characters';
     if (!data.message || data.message.trim().length < 10)
       errs.message = 'Message must be at least 10 characters';
     return errs;
@@ -243,6 +246,22 @@ const Contact = () => {
                       </select>
                       {errors.subject && <span className="field-error">{errors.subject}</span>}
                     </div>
+                  </div>
+                  {/* address */}
+                  <div className={`form-group ${errors.address ? 'has-error' : ''}`}>
+                    <label htmlFor="address">📍Address</label>
+                    <textarea
+                      id="address"
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      placeholder="your current address..."
+                      rows={1}
+                    />
+                    <div className="char-count">
+                      {form.address.length} chars {form.address.length < 10 && form.address.length > 0 ? `(${10 - form.address.length} more needed)` : ''}
+                    </div>
+                    {errors.address && <span className="field-error">{errors.address}</span>}
                   </div>
 
                   {/* Message */}

@@ -3,7 +3,7 @@ const transporter = require('../config/email');
 require('dotenv').config();
 
 // Validate enquiry input
-const validateInput = ({ name, phone, classLevel, subject, message }) => {
+const validateInput = ({ name, phone, classLevel, subject, message ,address }) => {
   const errors = [];
 
   if (!name || name.trim().length < 2) {
@@ -21,6 +21,9 @@ const validateInput = ({ name, phone, classLevel, subject, message }) => {
   if (!subject || subject.trim() === '') {
     errors.push('Subject is required');
   }
+  if (!address || address.trim().length < 10) {
+    errors.push('Address must be at least 10 characters long');
+  }
 
   if (!message || message.trim().length < 10) {
     errors.push('Message must be at least 10 characters long');
@@ -30,23 +33,24 @@ const validateInput = ({ name, phone, classLevel, subject, message }) => {
 };
 
 // Save enquiry to DB
-const saveEnquiry = async ({ name, phone, classLevel, subject, message }) => {
+const saveEnquiry = async ({ name, phone, classLevel, subject, message , address }) => {
   const query = `
-    INSERT INTO enquiries (name, phone, class, subject, message)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO enquiries (name, phone, class, subject, message , address)
+    VALUES (?, ?, ?, ?, ?,?)
   `;
   const [result] = await pool.execute(query, [
     name.trim(),
     phone.trim(),
     classLevel.trim(),
     subject.trim(),
-    message.trim()
+    message.trim(),
+    address.trim()
   ]);
   return result.insertId;
 };
 
 // Send notification email
-const sendEmail = async ({ name, phone, classLevel, subject, message }) => {
+const sendEmail = async ({ name, phone, classLevel, subject, message , address }) => {
   const mailOptions = {
     from: `"Target Coaching Classes" <${process.env.EMAIL_USER}>`,
     to: process.env.RECEIVER_EMAIL || 'vishalverma@gmail.com',
@@ -79,6 +83,10 @@ const sendEmail = async ({ name, phone, classLevel, subject, message }) => {
               <td style="padding: 12px 15px; color: #333;">${subject}</td>
             </tr>
             <tr style="background: #f5f5f5;">
+              <td style="padding: 12px 15px; font-weight: bold; color: #555; vertical-align: top;">📍 Address</td>
+              <td style="padding: 12px 15px; color: #333;">${address}</td>
+            </tr>
+            <tr style="background: #f5f5f5;">
               <td style="padding: 12px 15px; font-weight: bold; color: #555; vertical-align: top;">💬 Message</td>
               <td style="padding: 12px 15px; color: #333;">${message}</td>
             </tr>
@@ -102,13 +110,12 @@ const sendEmail = async ({ name, phone, classLevel, subject, message }) => {
 // Main contact controller
 const submitContact = async (req, res) => {
   try {
-    const { name, phone, classLevel, subject, message } = req.body;
+    const { name, phone, classLevel, subject, message , address } = req.body;
 
-    console.log('\n📬 New contact form submission received:');
-    console.log({ name, phone, classLevel, subject, message });
+
 
     // Validate input
-    const errors = validateInput({ name, phone, classLevel, subject, message });
+    const errors = validateInput({ name, phone, classLevel, subject, message ,address});
     if (errors.length > 0) {
       return res.status(400).json({
         success: false,
@@ -118,12 +125,12 @@ const submitContact = async (req, res) => {
     }
 
     // Save to database
-    const insertId = await saveEnquiry({ name, phone, classLevel, subject, message });
-    console.log(`✅ Enquiry saved to DB with ID: ${insertId}`);
+    const insertId = await saveEnquiry({ name, phone, classLevel, subject, message , address });
+   
 
     // Send email notification
     try {
-      await sendEmail({ name, phone, classLevel, subject, message });
+      await sendEmail({ name, phone, classLevel, subject, message , address });
     } catch (emailError) {
       console.error('⚠️ Email sending failed (enquiry still saved):', emailError.message);
     }
