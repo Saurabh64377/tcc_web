@@ -1,0 +1,18 @@
+node_modules/
+
+# env files
+.env
+
+# build folder
+build/
+dist/
+
+# cache
+.cache/
+.next/
+
+# testing
+coverage/
+
+# misc
+*.log

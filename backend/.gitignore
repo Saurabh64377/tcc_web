@@ -1,0 +1,22 @@
+node_modules/
+
+# env files (important - secrets)
+.env
+
+# logs
+logs/
+*.log
+
+# runtime files
+tmp/
+temp/
+
+# uploads (agar multer use kar rahe ho)
+uploads/
+
+# build / dist
+dist/
+build/
+
+# coverage (testing)
+coverage/
